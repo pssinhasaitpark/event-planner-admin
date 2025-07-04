@@ -33,19 +33,24 @@ import artistReducer from "../slice/artistSlice";
 import productReducer from "../slice/productSlice";
 import categoryReducer from "../slice/CategorySlice";
 import createCatogryReducer from "../slice/createCategorySlice";
-
+import bookingReducer from "../slice/bookingSlice";
+import policyReducer from "../slice/policySlice";
+import faqReducer from "../slice/faqSlice";
 const store = configureStore({
   reducer: {
     products: productReducer,
     categories: categoryReducer,
     createCategory: createCatogryReducer,
+    faqs: faqReducer,
+    policy: policyReducer,
+    bookings: bookingReducer,
     auth: authReducer,
     booklist: booklistReducer,
     newsAndStories: newsAndStoriesReducer,
     gallery: galleryReducer,
     events: eventReducer,
     artist: artistReducer,
-    artist: artistReducer,
+    // artist: artistReducer,
     eventVideos: eventVideosReducer,
     profile: profileReducer,
     contact: contactReducer,

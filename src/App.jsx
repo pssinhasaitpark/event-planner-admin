@@ -27,14 +27,18 @@ import GetAQuote from "./view/components/GetAQuote/GetAQuote.jsx";
 import Product from "./view/components/Product/Product.jsx";
 import Category from "./view/components/Category/Category.jsx";
 import PageDetails from "./view/components/PageDetails/PageDetails.jsx";
-import CommitteeOrTrustee from "./view/components/CommitteeOrTrustee/CommitteeOrTrustee.jsx";
-import RegistrationAndCertificates from "./view/components/RegistrationAndCertificates/RegistrationAndCertificates.jsx";
+import Booking from "./view/components/Booking/Booking.jsx";
+import Products from "./view/components/Products/Products.jsx";
 import Projects from "./view/components/Projects/Projects.jsx";
 import SubCategory from "../src/view/components/SubCategory/SubCategory.jsx";
 import GetInvolved from "./view/components/GetInvolved/GetInvolved.jsx";
 import Awards from "./view/components/Awards/Awards.jsx";
 import NewsAndStories from "./view/components/NewsAndStories/NewsAndStories.jsx";
 import Events from "./view/components/Events/Events.jsx";
+import TermsAndConditions from "./view/pages/TermsAndConditions/TermsAndConditions.jsx";
+import PrivacyPolicy from "./view/pages/Privacy/PrivacyPolicy.jsx";
+import Faq from "./view/pages/FAQ's/Faq.jsx";
+import About from "./view/pages/About/About.jsx";
 
 function App() {
   return (
@@ -73,17 +77,19 @@ function App() {
 
         <Route path="/category" element={<Category />} />
         <Route path="/page-details" element={<PageDetails />} />
-        <Route path="/committeeortrustee" element={<CommitteeOrTrustee />} />
-        <Route
-          path="/registrationandcertificates"
-          element={<RegistrationAndCertificates />}
-        />
+        <Route path="/booking" element={<Booking />} />
+        <Route path="/products" element={<Products />} />
         <Route path="/projects" element={<Projects />} />
         <Route path="/subcategory" element={<SubCategory />} />
         <Route path="/getinvolved" element={<GetInvolved />} />
         <Route path="/awards" element={<Awards />} />
         <Route path="/newsandstories" element={<NewsAndStories />} />
         <Route path="/events" element={<Events />} />
+
+        <Route path="/termsandconditions" element={<TermsAndConditions />} />
+        <Route path="/privarypolicy" element={<PrivacyPolicy />} />
+        <Route path="/faq" element={<Faq />} />
+        <Route path="/aboutus" element={<About />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/login" />} />

@@ -34,75 +34,50 @@ import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import NewspaperIcon from "@mui/icons-material/Newspaper";
 import PeopleIcon from "@mui/icons-material/People";
 import logo from "../../../assets/Images/logo1.png";
+import SafetyCheckIcon from "@mui/icons-material/SafetyCheck";
+import GavelIcon from "@mui/icons-material/Gavel";
+import EventNoteIcon from "@mui/icons-material/EventNote";
+import QuizIcon from "@mui/icons-material/Quiz";
+import GroupIcon from "@mui/icons-material/Group";
 
 const Sidebar = ({ isMobile, drawerOpen, toggleDrawer }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [activeParent, setActiveParent] = useState(null);
   const [programmesOpen, setProgrammesOpen] = useState(false);
+  const activeColor = "#FFB84D"; // Golden-orange color
 
   const menuItems = [
     { text: "Dashboard", icon: <Dashboard />, path: "/dashboard" },
     { text: "Artist", icon: <ViewCarouselIcon />, path: "/artist" },
-    // {
-    //   text: "Contact Details",
-    //   icon: <ContactPhone />,
-    //   path: "/contactdetails",
-    // },
-    // { text: "Get A Quote", icon: <FormatQuoteIcon />, path: "/getaquote" },
+    { text: "Products", icon: <PeopleIcon />, path: "/products" },
     {
-      text: "Products",
-      icon: <PeopleIcon />,
-      path: "/products",
+      text: "Quick Links",
+      icon: <ConnectWithoutContactIcon />,
+      path: "/socialmedia",
     },
-    // { text: "Gallery", icon: <CollectionsIcon />, path: "/gallery" },
+    { text: "Booking", icon: <Diversity3Icon />, path: "/booking" },
+    { text: "Events", icon: <EventNoteIcon />, path: "/events" },
+    {
+      text: "Terms And Conditions",
+      icon: <GavelIcon />,
+      path: "/termsandconditions",
+    },
     // {
-    //   text: "Social Media",
-    //   icon: <ConnectWithoutContactIcon />,
-    //   path: "/socialmedia",
-    // },
-    // { text: "Category", icon: <CategoryIcon />, path: "/category" },
-    // {
-    //   text: "Sub Category",
-    //   icon: <CategoryIcon />,
-    //   path: "/subcategory",
-    // },
-    // { text: "Page Details", icon: <DetailsIcon />, path: "/page-details" },
-    // {
-    //   text: "Committee Or Trustee",
-    //   icon: <Diversity3Icon />,
-    //   path: "/committeeortrustee",
-    // },
-    // {
-    //   text: "Registration And Certificates",
-    //   icon: <AppRegistrationIcon />,
-    //   path: "/registrationandcertificates",
-    // },
-    // {
-    //   text: "Projects",
-    //   icon: <AccountTreeIcon />,
-    //   path: "/projects",
-    // },
-    // {
-    //   text: "Get Involved",
-    //   icon: <DescriptionIcon />,
-    //   path: "/getinvolved",
-    // },
-    // {
-    //   text: "Awards",
-    //   icon: <EmojiEventsIcon />,
-    //   path: "/awards",
-    // },
-    // {
-    //   text: "News and Stories",
-    //   icon: <NewspaperIcon />,
-    //   path: "/newsandstories",
+    //   text: "Privacy Policy",
+    //   icon: <SafetyCheckIcon />,
+    //   path: "/privarypolicy  ",
     // },
     {
-      text: "Events",
-      icon: <EmojiEventsIcon />,
-      path: "/events",
+      text: "FAQ'S",
+      icon: <QuizIcon />,
+      path: "/faq  ",
     },
+    // {
+    //   text: "About Us",
+    //   icon: <GroupIcon />,
+    //   path: "/aboutus  ",
+    // },
   ];
 
   useEffect(() => {
@@ -110,14 +85,12 @@ const Sidebar = ({ isMobile, drawerOpen, toggleDrawer }) => {
     const activeIndex = menuItems.findIndex((item) =>
       currentPath.startsWith(item.path)
     );
-
     if (currentPath === "/") {
       setActiveParent(0);
       navigate("/dashboard");
     } else {
       setActiveParent(activeIndex !== -1 ? activeIndex : null);
     }
-    // eslint-disable-next-line
   }, [location.pathname, navigate]);
 
   const handleParentClick = (index, item) => {
@@ -140,7 +113,6 @@ const Sidebar = ({ isMobile, drawerOpen, toggleDrawer }) => {
           {drawerOpen ? <CloseIcon /> : <MenuIcon />}
         </IconButton>
       )}
-
       <Drawer
         variant={isMobile ? "temporary" : "permanent"}
         anchor="left"
@@ -179,9 +151,7 @@ const Sidebar = ({ isMobile, drawerOpen, toggleDrawer }) => {
             />
           </Link>
         </Box>
-
         <Divider />
-
         <List>
           {menuItems.map((item, index) => (
             <React.Fragment key={index}>
@@ -190,20 +160,21 @@ const Sidebar = ({ isMobile, drawerOpen, toggleDrawer }) => {
                 onClick={() => handleParentClick(index, item)}
                 sx={{
                   backgroundColor:
-                    activeParent === index ? "#eafaf1" : "transparent",
-                  "&:hover": { backgroundColor: "#eafaf1", cursor: "pointer" },
+                    activeParent === index
+                      ? "rgba(255, 184, 77, 0.7)"
+                      : "transparent",
+                  "&:hover": {
+                    backgroundColor: "rgba(255, 184, 77, 0.7)",
+                    cursor: "pointer",
+                  },
+                  marginBottom: "4px", // Add margin at the bottom of each ListItem
                 }}
               >
-                <ListItemIcon
-                  sx={{ color: activeParent === index ? "#1e1871" : "inherit" }}
-                >
-                  {item.icon}
-                </ListItemIcon>
+                <ListItemIcon>{item.icon}</ListItemIcon>
                 <ListItemText primary={item.text} />
                 {item.dropdown &&
                   (programmesOpen ? <ExpandLess /> : <ExpandMore />)}
               </ListItem>
-
               {item.dropdown && (
                 <Collapse in={programmesOpen} timeout="auto" unmountOnExit>
                   <List component="div" disablePadding>

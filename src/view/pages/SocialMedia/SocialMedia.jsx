@@ -71,7 +71,12 @@ const SocialMedia = () => {
 
   if (loading || showLoader)
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" height="50vh">
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        height="50vh"
+      >
         <CircularProgress sx={{ color: "#1e1871" }} />
       </Box>
     );
@@ -84,15 +89,29 @@ const SocialMedia = () => {
     setSaving(true);
     try {
       if (id) {
-        await dispatch(updateSocialMedia({ id, updatedLinks: socialLinks })).unwrap();
-        setSnackbar({ open: true, message: "Social media links updated!", severity: "success" });
+        await dispatch(
+          updateSocialMedia({ id, updatedLinks: socialLinks })
+        ).unwrap();
+        setSnackbar({
+          open: true,
+          message: "Social media links updated!",
+          severity: "success",
+        });
       } else {
         await dispatch(addSocialMedia(socialLinks)).unwrap();
-        setSnackbar({ open: true, message: "Social media links added!", severity: "success" });
+        setSnackbar({
+          open: true,
+          message: "Social media links added!",
+          severity: "success",
+        });
       }
       dispatch(fetchSocialMedia());
     } catch (error) {
-      setSnackbar({ open: true, message: "Operation failed. Try again.", severity: "error" });
+      setSnackbar({
+        open: true,
+        message: "Operation failed. Try again.",
+        severity: "error",
+      });
     } finally {
       setSaving(false);
     }
@@ -101,10 +120,18 @@ const SocialMedia = () => {
   const handleDelete = async (key) => {
     try {
       await dispatch(deleteSocialMediaLink({ id, key })).unwrap();
-      setSnackbar({ open: true, message: "Social media link deleted!", severity: "success" });
+      setSnackbar({
+        open: true,
+        message: "Social media link deleted!",
+        severity: "success",
+      });
       dispatch(fetchSocialMedia());
     } catch (error) {
-      setSnackbar({ open: true, message: "Operation failed. Try again.", severity: "error" });
+      setSnackbar({
+        open: true,
+        message: "Operation failed. Try again.",
+        severity: "error",
+      });
     }
   };
 
@@ -122,18 +149,29 @@ const SocialMedia = () => {
     x: <Twitter sx={{ color: "black", fontSize: 32 }} />,
     pinterest: <Pinterest sx={{ color: "#E60023", fontSize: 32 }} />,
     snapchat: <FaSnapchatGhost style={{ color: "#FFFC00", fontSize: 32 }} />,
-    threads: <FontAwesomeIcon icon={faThreads} />
+    threads: <FontAwesomeIcon icon={faThreads} />,
   };
 
   return (
     <Container maxWidth="lg">
-      <Box sx={{ p: 4, boxShadow: 3, borderRadius: 2, backgroundColor: "white", mt: 5 }}>
+      <Box
+        sx={{
+          p: 4,
+          boxShadow: 3,
+          borderRadius: 2,
+          backgroundColor: "white",
+          mt: 5,
+        }}
+      >
         <Typography variant="h5" fontWeight="bold" gutterBottom sx={{ mb: 5 }}>
           Social Media Links
         </Typography>
 
         {Object.keys(socialLinks).map((key) => (
-          <Box key={key} sx={{ display: "flex", alignItems: "center", gap: 2, mb: 3 }}>
+          <Box
+            key={key}
+            sx={{ display: "flex", alignItems: "center", gap: 2, mb: 3 }}
+          >
             <Box sx={{ width: 40, display: "flex", justifyContent: "center" }}>
               {iconMap[key] || null}
             </Box>
@@ -163,11 +201,17 @@ const SocialMedia = () => {
             sx={{
               minWidth: 140,
               py: 1,
-              backgroundColor: "#023e8a",
-              "&:hover": { backgroundColor: "#023e8a" },
+              backgroundColor: "#121212",
+              "&:hover": { backgroundColor: "#121212" },
             }}
           >
-            {saving ? <CircularProgress size={24} /> : id ? "Update All" : "Save"}
+            {saving ? (
+              <CircularProgress size={24} />
+            ) : id ? (
+              "Update All"
+            ) : (
+              "Save"
+            )}
           </Button>
         </Box>
       </Box>
@@ -186,7 +230,6 @@ const SocialMedia = () => {
 };
 
 export default SocialMedia;
-
 
 // import React, { useState, useEffect } from "react";
 // import {

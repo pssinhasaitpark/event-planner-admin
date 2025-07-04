@@ -68,6 +68,7 @@ const Artist = () => {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxImages, setLightboxImages] = useState([]);
   const [lightboxIndex, setLightboxIndex] = useState(0);
+  const imageUrl = import.meta.env.VITE_REACT_IMAGE_URL;
 
   useEffect(() => {
     dispatch(fetchArtists());
@@ -261,7 +262,6 @@ const Artist = () => {
       <Typography variant="h4" sx={{ mb: 2, fontWeight: "bold" }}>
         Artists
       </Typography>
-
       <Box display="flex" justifyContent="flex-end" sx={{ mb: 2 }}>
         <Button
           variant="contained"
@@ -273,32 +273,48 @@ const Artist = () => {
             setValidationErrors({ name: "", description: "", images: "" });
           }}
           sx={{
-            backgroundColor: "#023e8a",
-            "&:hover": { backgroundColor: "#023e8a" },
+            backgroundColor: " #121212",
+            "&:hover": { backgroundColor: " #121212" },
             textTransform: "none",
           }}
         >
           Add New Artist
         </Button>
       </Box>
-
       {artistsData && artistsData.length > 0 ? (
         <>
-          <TableContainer component={Paper} sx={{ mt: 2 }}>
-            <Table>
+          <TableContainer
+            component={Paper}
+            sx={{
+              mt: 2,
+              height: "60vh", // Fixed height for the table container
+              overflowY: "auto", // Enable vertical scrolling if content overflows
+            }}
+          >
+            <Table sx={{ minWidth: 650 }} aria-label="simple table">
               <TableHead>
                 <TableRow>
-                  <TableCell sx={{ fontWeight: "bold" }}>Name</TableCell>
-                  <TableCell sx={{ fontWeight: "bold" }}>Description</TableCell>
-                  <TableCell sx={{ fontWeight: "bold" }}>Image</TableCell>
-                  <TableCell sx={{ fontWeight: "bold" }}>Actions</TableCell>
+                  <TableCell sx={{ fontWeight: "bold", width: "20%" }}>
+                    Name
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: "bold", width: "40%" }}>
+                    Description
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: "bold", width: "20%" }}>
+                    Image
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: "bold", width: "20%" }}>
+                    Actions
+                  </TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {currentArtistsData.map((artist) => (
                   <TableRow key={artist._id}>
-                    <TableCell>{artist.name || "Unknown"}</TableCell>
-                    <TableCell>
+                    <TableCell sx={{ width: "20%" }}>
+                      {artist.name || "Unknown"}
+                    </TableCell>
+                    <TableCell sx={{ width: "40%" }}>
                       <Box display="flex" alignItems="center">
                         <div
                           dangerouslySetInnerHTML={{
@@ -309,48 +325,65 @@ const Artist = () => {
                         />
                       </Box>
                     </TableCell>
-                    <TableCell>
+                    <TableCell sx={{ width: "20%" }}>
                       {artist.image && (
                         <Avatar
-                          src={artist.image}
+                          src={`${imageUrl}${artist.image}`}
                           variant="rounded"
                           sx={{ width: 100, height: 70, borderRadius: 1 }}
                         />
                       )}
                     </TableCell>
-                    <TableCell>
-                      <IconButton
-                        size="small"
-                        onClick={() => handlePreviewClick(artist)}
-                      >
-                        <VisibilityIcon />
-                      </IconButton>
-                      <Button
-                        variant="outlined"
-                        onClick={() => handleEditClick(artist)}
-                        sx={{ border: 0 }}
-                      >
-                        <EditIcon />
-                      </Button>
-                      <Button
-                        variant="outlined"
-                        onClick={() => handleDeleteClick(artist._id)}
-                        sx={{ ml: 1, border: 0 }}
-                      >
-                        <DeleteIcon fontSize="small" color="error" />
-                      </Button>
+                    <TableCell sx={{ width: "20%" }}>
+                      <Box display="flex" alignItems="center">
+                        <IconButton
+                          size="small"
+                          onClick={() => handlePreviewClick(artist)}
+                          sx={{ color: "#121212" }}
+                        >
+                          <VisibilityIcon />
+                        </IconButton>
+                        <IconButton
+                          size="small"
+                          onClick={() => handleEditClick(artist)}
+                          sx={{ color: "#121212", ml: 1 }}
+                        >
+                          <EditIcon />
+                        </IconButton>
+                        <IconButton
+                          size="small"
+                          onClick={() => handleDeleteClick(artist._id)}
+                          sx={{ color: "error", ml: 1 }}
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      </Box>
                     </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
           </TableContainer>
+
           <Box display="flex" justifyContent="center" sx={{ mt: 2 }}>
             <Pagination
               count={Math.ceil(artistsData.length / itemsPerPage)}
               page={currentPage}
               onChange={handlePageChange}
-              color="primary"
+              color="secondary"
+              sx={{
+                // backgroundColor: "#121212",
+                borderRadius: "8px",
+                padding: "4px 8px",
+                "& .MuiPaginationItem-root": {
+                  color: "#121212", // page number text color
+                  borderColor: "#333",
+                },
+                "& .Mui-selected": {
+                  backgroundColor: "#333 !important",
+                  color: "#fff",
+                },
+              }}
             />
           </Box>
         </>
@@ -363,7 +396,6 @@ const Artist = () => {
           No artists available. Please add a new artist.
         </Typography>
       )}
-
       <Dialog
         open={openModal}
         onClose={resetForm}
@@ -461,8 +493,8 @@ const Artist = () => {
             onClick={editMode ? handleUpdateArtist : handleAddArtist}
             variant="contained"
             sx={{
-              backgroundColor: "#023e8a",
-              "&:hover": { backgroundColor: "#023e8a" },
+              backgroundColor: " #121212",
+              "&:hover": { backgroundColor: " #121212" },
               textTransform: "none",
             }}
           >
@@ -470,7 +502,6 @@ const Artist = () => {
           </Button>
         </DialogActions>
       </Dialog>
-
       <Dialog
         open={previewDialogOpen}
         onClose={() => setPreviewDialogOpen(false)}
@@ -483,49 +514,43 @@ const Artist = () => {
         <DialogContent sx={{ padding: "16px" }}>
           {previewArtist && (
             <>
-              <Box
-                sx={{
-                  border: "1px solid #ccc",
-                  padding: "16px",
-                  borderRadius: "4px",
+              {/* REMOVED THE BOX WITH BORDER - Content now flows naturally */}
+              <Typography variant="h6">Name: {previewArtist.name}</Typography>
+              <Divider sx={{ my: 2 }} />
+              <Typography variant="body1">Description:</Typography>
+              <div
+                dangerouslySetInnerHTML={{
+                  __html: previewArtist.description,
                 }}
-              >
-                <Typography variant="h6">Name: {previewArtist.name}</Typography>
-                <Divider sx={{ my: 2 }} />
-                <Typography variant="body1">Description:</Typography>
-                <div
-                  dangerouslySetInnerHTML={{
-                    __html: previewArtist.description,
-                  }}
-                />
-                <Divider sx={{ my: 2 }} />
-                <Typography variant="body1">Image:</Typography>
-                {previewArtist.image ? (
-                  <Box sx={{ mt: 2 }}>
-                    <Box
+              />
+              <Divider sx={{ my: 2 }} />
+              <Typography variant="body1">Image:</Typography>
+              {previewArtist.image ? (
+                <Box sx={{ mt: 2 }}>
+                  <Box
+                    sx={{
+                      position: "relative",
+                      display: "inline-block",
+                      mt: 1,
+                    }}
+                  >
+                    <Avatar
+                      // src={previewArtist.image}
+                      src={`${imageUrl}${previewArtist.image}`}
+                      variant="rounded"
                       sx={{
-                        position: "relative",
-                        display: "inline-block",
-                        mt: 1,
+                        width: 100,
+                        height: 70,
+                        borderRadius: 1,
+                        cursor: "pointer",
                       }}
-                    >
-                      <Avatar
-                        src={previewArtist.image}
-                        variant="rounded"
-                        sx={{
-                          width: 100,
-                          height: 70,
-                          borderRadius: 1,
-                          cursor: "pointer",
-                        }}
-                        onClick={() => handleImageClick(0)}
-                      />
-                    </Box>
+                      onClick={() => handleImageClick(0)}
+                    />
                   </Box>
-                ) : (
-                  <Typography variant="body1">No image available.</Typography>
-                )}
-              </Box>
+                </Box>
+              ) : (
+                <Typography variant="body1">No image available.</Typography>
+              )}
             </>
           )}
         </DialogContent>
@@ -537,11 +562,11 @@ const Artist = () => {
         <Lightbox
           open={lightboxOpen}
           close={() => setLightboxOpen(false)}
-          slides={previewArtist.image ? [{ src: previewArtist.image }] : []}
+                    
+          slides={previewArtist.image ? [{ src: `${imageUrl}${previewArtist.image}` }] : []}
           index={lightboxIndex}
         />
       )}
-
       <Dialog
         open={deleteDialogOpen}
         onClose={() => setDeleteDialogOpen(false)}

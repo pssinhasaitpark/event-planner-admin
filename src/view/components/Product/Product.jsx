@@ -19,12 +19,12 @@ import {
   DialogContent,
   DialogTitle,
   Container,
-  MenuItem,
-  Select,
-  FormControl,
-  InputLabel,
   Pagination,
   Divider,
+  Select,
+  MenuItem,
+  InputLabel,
+  FormControl,
 } from "@mui/material";
 import {
   Delete as DeleteIcon,
@@ -37,44 +37,46 @@ import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import {
   fetchProducts,
+  fetchCategories,
   saveProduct,
   updateProduct,
   deleteProduct,
-} from "../../redux/slice/productSlice";
-import {
-  fetchCategories,
   saveCategory,
-} from "../../redux/slice/createCategorySlice";
+} from "../../redux/slice/productSlice";
 import Lightbox from "yet-another-react-lightbox";
 import "yet-another-react-lightbox/styles.css";
 
-const validationSchema = Yup.object({
+const productValidationSchema = Yup.object({
   name: Yup.string().required("Name is required"),
   description: Yup.string().required("Description is required"),
-  price: Yup.number()
-    .required("Price is required")
-    .positive("Price must be positive"),
-  stock: Yup.number()
-    .required("Stock is required")
-    .integer("Stock must be an integer"),
+  price: Yup.number().required("Price is required"),
+  stock: Yup.number().required("Stock is required"),
   category: Yup.string().required("Category is required"),
   images: Yup.array().min(1, "At least one image is required"),
 });
 
-const ProductComponent = () => {
+const categoryValidationSchema = Yup.object({
+  name: Yup.string().required("Name is required"),
+  description: Yup.string().required("Description is required"),
+});
+
+const Product = () => {
   const dispatch = useDispatch();
-  const { data: productsData, status: productsStatus } = useSelector(
-    (state) => state.products
-  ) || { data: [], status: "idle" };
-  const { data: categoriesData, status: categoriesStatus } = useSelector(
-    (state) => state.createCategory
-  ) || { data: [], status: "idle" };
-
-
+  const {
+    data: productData,
+    categories,
+    status: productStatus,
+  } = useSelector((state) => state.products) || {
+    data: [],
+    categories: [],
+    status: "idle",
+  };
 
   const [showLoader, setShowLoader] = useState(true);
   const [openModal, setOpenModal] = useState(false);
+  const [openCategoryModal, setOpenCategoryModal] = useState(false);
   const [editMode, setEditMode] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
   const [selectedProductId, setSelectedProductId] = useState(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [productIdToDelete, setProductIdToDelete] = useState(null);
@@ -82,30 +84,10 @@ const ProductComponent = () => {
   const [itemsPerPage] = useState(5);
   const [previewDialogOpen, setPreviewDialogOpen] = useState(false);
   const [previewProduct, setPreviewProduct] = useState(null);
-  const [openCategoryModal, setOpenCategoryModal] = useState(false);
-  const [initialValues, setInitialValues] = useState({
-    name: "",
-    description: "",
-    price: "",
-    stock: "",
-    category: "",
-    images: [],
-  });
-
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxImages, setLightboxImages] = useState([]);
   const [lightboxIndex, setLightboxIndex] = useState(0);
-
-  const handleImageClick = (index) => {
-    setLightboxIndex(index);
-    setLightboxImages(previewProduct.images || []);
-    setLightboxOpen(true);
-  };
-
-  const handlePreviewClick = (product) => {
-    setPreviewProduct(product);
-    setPreviewDialogOpen(true);
-  };
+  const imageUrl = import.meta.env.VITE_REACT_IMAGE_URL;
 
   useEffect(() => {
     dispatch(fetchProducts());
@@ -120,9 +102,27 @@ const ProductComponent = () => {
     return () => clearTimeout(timer);
   }, []);
 
+  const handleImageClick = (index) => {
+    setLightboxIndex(index);
+    setLightboxImages(previewProduct.images);
+    setLightboxOpen(true);
+  };
+
+  const handleEditClick = (product) => {
+    setSelectedProduct(product);
+    setSelectedProductId(product._id);
+    setEditMode(true);
+    setOpenModal(true);
+  };
+
   const handleDeleteClick = (productId) => {
     setProductIdToDelete(productId);
     setDeleteDialogOpen(true);
+  };
+
+  const handlePreviewClick = (product) => {
+    setPreviewProduct(product);
+    setPreviewDialogOpen(true);
   };
 
   const confirmDeleteProduct = async () => {
@@ -134,39 +134,26 @@ const ProductComponent = () => {
     setProductIdToDelete(null);
   };
 
-  const handleEditClick = (product) => {
-    setInitialValues({
-      name: product.name || "",
-      description: product.description || "",
-      price: product.price || "",
-      stock: product.stock || "",
-      category: product.category?._id || "",
-      images: product.images || [],
-    });
-    setSelectedProductId(product._id);
-    setEditMode(true);
-    setOpenModal(true);
-  };
-
   const handlePageChange = (event, value) => {
     setCurrentPage(value);
   };
 
-  const handleAddCategoryClick = () => {
-    setOpenCategoryModal(true);
+  const handleCloseModal = () => {
+    setOpenModal(false);
+    setEditMode(false);
+    setSelectedProduct(null);
+    setSelectedProductId(null);
+  };
+
+  const handleCloseCategoryModal = () => {
+    setOpenCategoryModal(false);
   };
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentProductsData = Array.isArray(productsData)
-    ? productsData.slice(indexOfFirstItem, indexOfLastItem)
-    : [];
+  const currentProducts = productData.slice(indexOfFirstItem, indexOfLastItem);
 
-  if (
-    productsStatus === "loading" ||
-    categoriesStatus === "loading" ||
-    showLoader
-  ) {
+  if (productStatus === "loading" || showLoader) {
     return (
       <Box
         display="flex"
@@ -179,10 +166,10 @@ const ProductComponent = () => {
     );
   }
 
-  if (productsStatus === "error" || categoriesStatus === "error")
+  if (productStatus === "error")
     return (
       <Typography variant="h6" color="error">
-        Error: {productsStatus === "error" ? productsStatus : categoriesStatus}
+        Error: {productStatus}
       </Typography>
     );
 
@@ -197,111 +184,103 @@ const ProductComponent = () => {
       }}
     >
       <Typography variant="h4" sx={{ mb: 2, fontWeight: "bold" }}>
-        Products
+        Product Details
       </Typography>
 
       <Box display="flex" justifyContent="flex-end" sx={{ mb: 2 }}>
         <Button
           variant="contained"
           startIcon={<AddIcon />}
-          onClick={handleAddCategoryClick}
+          onClick={() => {
+            setOpenModal(true);
+            setEditMode(false);
+            setSelectedProduct(null);
+          }}
           sx={{
-            backgroundColor: "#023e8a",
-            "&:hover": { backgroundColor: "#023e8a" },
+            backgroundColor: "#121212",
+            "&:hover": { backgroundColor: "#121212" },
             textTransform: "none",
             mr: 2,
           }}
         >
-          Add Category
+          Add New Product
         </Button>
         <Button
           variant="contained"
           startIcon={<AddIcon />}
           onClick={() => {
-            setOpenModal(true);
-            setEditMode(false);
-            setInitialValues({
-              name: "",
-              description: "",
-              price: "",
-              stock: "",
-              category: "",
-              images: [],
-            });
+            setOpenCategoryModal(true);
           }}
           sx={{
-            backgroundColor: "#023e8a",
-            "&:hover": { backgroundColor: "#023e8a" },
+            backgroundColor: "#121212",
+            "&:hover": { backgroundColor: "#121212" },
             textTransform: "none",
           }}
         >
-          Add New Product
+          Add New Category
         </Button>
       </Box>
 
-      {productsData && productsData.length > 0 ? (
+      {productData && productData.length > 0 ? (
         <>
-          <TableContainer component={Paper} sx={{ mt: 2 }}>
-            <Table>
+          <TableContainer
+            component={Paper}
+            sx={{
+              mt: 2,
+              height: "60vh", // Fixed height for the table container
+              overflowY: "auto", // Enable vertical scrolling if content overflows
+            }}
+          >
+            <Table sx={{ minWidth: 650 }} aria-label="simple table">
               <TableHead>
                 <TableRow>
-                  <TableCell sx={{ fontWeight: "bold" }}>Name</TableCell>
-                  <TableCell sx={{ fontWeight: "bold" }}>Description</TableCell>
-                  <TableCell sx={{ fontWeight: "bold" }}>Price</TableCell>
-                  <TableCell sx={{ fontWeight: "bold" }}>Stock</TableCell>
-                  <TableCell sx={{ fontWeight: "bold" }}>Images</TableCell>
-                  <TableCell sx={{ fontWeight: "bold" }}>Actions</TableCell>
+                  <TableCell sx={{ fontWeight: "bold", width: "20%" }}>
+                    Name
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: "bold", width: "40%" }}>
+                    Description
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: "bold", width: "20%" }}>
+                    Images
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: "bold", width: "20%" }}>
+                    Actions
+                  </TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {currentProductsData.map((product) => (
+                {currentProducts.map((product) => (
                   <TableRow key={product._id}>
-                    <TableCell>{product.name}</TableCell>
-                    <TableCell>
-                      <div
-                        dangerouslySetInnerHTML={{
-                          __html: product.description
-                            ? `${product.description.substring(0, 50)}...`
-                            : "No description available.",
-                        }}
-                      />
+                    <TableCell sx={{ width: "20%" }}>{product.name}</TableCell>
+                    <TableCell sx={{ width: "40%" }}>
+                      {product.description}
                     </TableCell>
-                    <TableCell>{product.price}</TableCell>
-                    <TableCell>{product.stock}</TableCell>
-                    <TableCell>
-                      {product.images && product.images.length > 0 ? (
+                    <TableCell sx={{ width: "20%" }}>
+                      {product.images && product.images.length > 0 && (
                         <Avatar
-                          src={product.images[0]}
+                          src={`${imageUrl}${product.images[0]}`}
                           variant="rounded"
-                          sx={{
-                            width: 100,
-                            height: 70,
-                            borderRadius: 1,
-                            cursor: "pointer",
-                          }}
-                          onClick={() => handleImageClick(0)}
+                          sx={{ width: 100, height: 70, borderRadius: 1 }}
                         />
-                      ) : (
-                        <Typography variant="body2">No images</Typography>
                       )}
                     </TableCell>
-                    <TableCell>
+                    <TableCell sx={{ width: "20%" }}>
                       <Box display="flex" alignItems="center">
                         <IconButton
                           onClick={() => handlePreviewClick(product)}
-                          sx={{ border: 0 }}
+                          sx={{ border: 0, color: "#121212" }}
                         >
                           <VisibilityIcon />
                         </IconButton>
                         <IconButton
                           onClick={() => handleEditClick(product)}
-                          sx={{ border: 0 }}
+                          sx={{ border: 0, color: "#121212" }}
                         >
                           <EditIcon />
                         </IconButton>
                         <IconButton
                           onClick={() => handleDeleteClick(product._id)}
-                          sx={{ border: 0 }}
+                          sx={{ border: 0, color: "#121212" }}
                         >
                           <DeleteIcon fontSize="small" color="error" />
                         </IconButton>
@@ -312,12 +291,26 @@ const ProductComponent = () => {
               </TableBody>
             </Table>
           </TableContainer>
+
           <Box display="flex" justifyContent="center" sx={{ mt: 2 }}>
             <Pagination
-              count={Math.ceil(productsData.length / itemsPerPage)}
+              count={Math.ceil(productData.length / itemsPerPage)}
               page={currentPage}
               onChange={handlePageChange}
-              color="primary"
+              color="secondary"
+              sx={{
+                // backgroundColor: "#121212",
+                borderRadius: "8px",
+                padding: "4px 8px",
+                "& .MuiPaginationItem-root": {
+                  color: "#121212", // page number text color
+                  borderColor: "#333",
+                },
+                "& .Mui-selected": {
+                  backgroundColor: "#333 !important",
+                  color: "#fff",
+                },
+              }}
             />
           </Box>
         </>
@@ -333,18 +326,26 @@ const ProductComponent = () => {
 
       <Dialog
         open={openModal}
-        onClose={() => setOpenModal(false)}
+        onClose={handleCloseModal}
         fullWidth
-        maxWidth="lg"
-        PaperProps={{ style: { maxWidth: "1000px", maxHeight: "90vh" } }}
+        PaperProps={{
+          style: { maxWidth: "1000px" },
+        }}
       >
         <DialogTitle>
           {editMode ? "Edit Product" : "Add New Product"}
         </DialogTitle>
         <Formik
-          initialValues={initialValues}
-          validationSchema={validationSchema}
+          initialValues={{
+            name: selectedProduct?.name || "",
+            description: selectedProduct?.description || "",
+            price: selectedProduct?.price || "",
+            stock: selectedProduct?.stock || "",
+            category: selectedProduct?.category || "",
+            images: selectedProduct?.images || [],
+          }}
           enableReinitialize={true}
+          validationSchema={productValidationSchema}
           onSubmit={async (values, { resetForm }) => {
             const formData = new FormData();
             formData.append("name", values.name);
@@ -353,37 +354,33 @@ const ProductComponent = () => {
             formData.append("stock", values.stock);
             formData.append("category", values.category);
 
-            if (values.images && values.images.length > 0) {
-              values.images.forEach((image) => {
+            values.images.forEach((image) => {
+              if (image instanceof File) {
                 formData.append("images", image);
-              });
-            }
-
-            try {
-              if (editMode) {
-                await dispatch(
-                  updateProduct({
-                    productId: selectedProductId,
-                    data: formData,
-                  })
-                );
-              } else {
-                await dispatch(saveProduct(formData));
+              } else if (typeof image === "string") {
+                formData.append("existingImages", image);
               }
+            });
 
-              resetForm();
-              setOpenModal(false);
-              setEditMode(false);
-              setSelectedProductId(null);
-              dispatch(fetchProducts());
-            } catch (error) {
-              console.error("Error saving product:", error);
+            if (editMode) {
+              await dispatch(
+                updateProduct({
+                  productId: selectedProductId,
+                  data: formData,
+                })
+              );
+            } else {
+              await dispatch(saveProduct(formData));
             }
+
+            resetForm();
+            handleCloseModal();
+            dispatch(fetchProducts());
           }}
         >
           {({ setFieldValue, values, errors, touched }) => (
             <Form>
-              <DialogContent sx={{ maxHeight: "70vh", overflowY: "auto" }}>
+              <DialogContent>
                 <Field
                   as={TextField}
                   name="name"
@@ -393,21 +390,15 @@ const ProductComponent = () => {
                   helperText={<ErrorMessage name="name" />}
                   error={touched.name && !!errors.name}
                 />
-                <Box sx={{ mt: 2, mb: 2 }}>
-                  <Typography variant="body1" sx={{ mb: 1 }}>
-                    Description
-                  </Typography>
-                  <Field
-                    as={TextField}
-                    name="description"
-                    label="Description"
-                    fullWidth
-                    multiline
-                    rows={4}
-                    helperText={<ErrorMessage name="description" />}
-                    error={touched.description && !!errors.description}
-                  />
-                </Box>
+                <Field
+                  as={TextField}
+                  name="description"
+                  label="Description"
+                  fullWidth
+                  sx={{ mt: 2 }}
+                  helperText={<ErrorMessage name="description" />}
+                  error={touched.description && !!errors.description}
+                />
                 <Field
                   as={TextField}
                   name="price"
@@ -431,13 +422,13 @@ const ProductComponent = () => {
                 <FormControl fullWidth sx={{ mt: 2 }}>
                   <InputLabel id="category-label">Category</InputLabel>
                   <Field
+                    name="category"
                     as={Select}
                     labelId="category-label"
-                    name="category"
                     label="Category"
                     error={touched.category && !!errors.category}
                   >
-                    {categoriesData.map((category) => (
+                    {categories.map((category) => (
                       <MenuItem key={category._id} value={category._id}>
                         {category.name}
                       </MenuItem>
@@ -456,8 +447,15 @@ const ProductComponent = () => {
                   type="file"
                   accept="image/*"
                   onChange={(event) => {
-                    const files = Array.from(event.target.files);
-                    setFieldValue("images", files);
+                    const files = Array.from(event.target.files || []);
+                    const selectedImages = [...values.images, ...files];
+
+                    if (selectedImages.length > 10) {
+                      alert("You can upload a maximum of 10 images.");
+                      return;
+                    }
+
+                    setFieldValue("images", selectedImages);
                   }}
                   style={{ marginTop: "10px", display: "block" }}
                   multiple
@@ -514,13 +512,13 @@ const ProductComponent = () => {
                 />
               </DialogContent>
               <DialogActions>
-                <Button onClick={() => setOpenModal(false)}>Cancel</Button>
+                <Button onClick={handleCloseModal}>Cancel</Button>
                 <Button
                   type="submit"
                   variant="contained"
                   sx={{
-                    backgroundColor: "#023e8a",
-                    "&:hover": { backgroundColor: "#023e8a" },
+                    backgroundColor: "#121212",
+                    "&:hover": { backgroundColor: "#121212" },
                     textTransform: "none",
                   }}
                 >
@@ -534,24 +532,29 @@ const ProductComponent = () => {
 
       <Dialog
         open={openCategoryModal}
-        onClose={() => setOpenCategoryModal(false)}
+        onClose={handleCloseCategoryModal}
+        fullWidth
+        PaperProps={{
+          style: { maxWidth: "1000px" },
+        }}
       >
         <DialogTitle>Add New Category</DialogTitle>
         <Formik
-          initialValues={{ name: "", description: "" }}
-          validationSchema={Yup.object({
-            name: Yup.string().required("Name is required"),
-            description: Yup.string().required("Description is required"),
-          })}
+          initialValues={{
+            name: "",
+            description: "",
+          }}
+          validationSchema={categoryValidationSchema}
           onSubmit={async (values, { resetForm }) => {
-            try {
-              await dispatch(saveCategory(values));
-              resetForm();
-              setOpenCategoryModal(false);
-              dispatch(fetchCategories());
-            } catch (error) {
-              console.error("Error saving category:", error);
-            }
+            const categoryData = {
+              name: values.name,
+              description: values.description,
+            };
+
+            await dispatch(saveCategory(categoryData));
+
+            resetForm();
+            handleCloseCategoryModal();
           }}
         >
           {({ setFieldValue, values, errors, touched }) => (
@@ -577,15 +580,19 @@ const ProductComponent = () => {
                 />
               </DialogContent>
               <DialogActions>
-                <Button onClick={() => setOpenCategoryModal(false)}>
+                <Button
+                  onClick={handleCloseCategoryModal}
+                  sx={{ color: "#121212" }}
+                >
                   Cancel
                 </Button>
+
                 <Button
                   type="submit"
                   variant="contained"
                   sx={{
-                    backgroundColor: "#023e8a",
-                    "&:hover": { backgroundColor: "#023e8a" },
+                    backgroundColor: "#121212",
+                    "&:hover": { backgroundColor: "#121212" },
                     textTransform: "none",
                   }}
                 >
@@ -617,84 +624,64 @@ const ProductComponent = () => {
         </DialogActions>
       </Dialog>
 
-      <Dialog
-        open={previewDialogOpen}
-        onClose={() => setPreviewDialogOpen(false)}
-        fullWidth
-        maxWidth="lg"
-        PaperProps={{ style: { maxWidth: "1000px", maxHeight: "90vh" } }}
-      >
-        <DialogTitle>Preview Product</DialogTitle>
-        <DialogContent sx={{ padding: "16px" }}>
-          {previewProduct && (
-            <Box
-              sx={{
-                border: "1px solid #ccc",
-                padding: "16px",
-                borderRadius: "4px",
-              }}
-            >
-              <Typography variant="h6">Name: {previewProduct.name}</Typography>
-              <Divider sx={{ my: 2 }} />
-              <Typography variant="h6">Description:</Typography>
-              <div
-                style={{ fontSize: "18px" }}
-                dangerouslySetInnerHTML={{ __html: previewProduct.description }}
+   <Dialog
+  open={previewDialogOpen}
+  onClose={() => setPreviewDialogOpen(false)}
+  fullWidth
+  maxWidth="md"
+>
+  <DialogTitle>Preview Product</DialogTitle>
+  <DialogContent>
+    {previewProduct && (
+      <Box>
+        <Typography variant="body1" sx={{ mb: 1 }}>
+          <strong>Name:</strong> {previewProduct.name}
+        </Typography>
+        <Divider sx={{ my: 2 }} />
+        <Typography variant="body1" sx={{ mb: 1 }}>
+          <strong>Description:</strong>
+        </Typography>
+        <Typography variant="body2" sx={{ mb: 2 }}>
+          {previewProduct.description}
+        </Typography>
+        <Divider sx={{ my: 2 }} />
+        <Typography variant="body1" sx={{ mb: 1 }}>
+          <strong>Images:</strong>
+        </Typography>
+        {previewProduct.images && previewProduct.images.length > 0 ? (
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+            {previewProduct.images.map((image, index) => (
+              <Avatar
+                key={index}
+                src={`${imageUrl}${image}`}
+                variant="rounded"
+                sx={{
+                  width: 100,
+                  height: 70,
+                  borderRadius: 1,
+                  cursor: "pointer",
+                }}
+                onClick={() => handleImageClick(index)}
               />
-              <Divider sx={{ my: 2 }} />
-              <Typography variant="h6">
-                Price: {previewProduct.price}
-              </Typography>
-              <Divider sx={{ my: 2 }} />
-              <Typography variant="h6">
-                Stock: {previewProduct.stock}
-              </Typography>
-              <Divider sx={{ my: 2 }} />
-              <Box sx={{ pt: 2 }}>
-                <Typography variant="h6">Images:</Typography>
-                {previewProduct.images && previewProduct.images.length > 0 ? (
-                  <Box sx={{ mt: 2 }}>
-                    {previewProduct.images.map((image, index) => (
-                      <Box
-                        key={index}
-                        sx={{
-                          position: "relative",
-                          display: "inline-block",
-                          mt: 1,
-                          mr: 2,
-                        }}
-                      >
-                        <Avatar
-                          src={image}
-                          variant="rounded"
-                          sx={{
-                            width: 100,
-                            height: 70,
-                            borderRadius: 1,
-                            cursor: "pointer",
-                          }}
-                          onClick={() => handleImageClick(index)}
-                        />
-                      </Box>
-                    ))}
-                  </Box>
-                ) : (
-                  <Typography variant="body1">No images available.</Typography>
-                )}
-              </Box>
-            </Box>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setPreviewDialogOpen(false)}>Close</Button>
-        </DialogActions>
-      </Dialog>
+            ))}
+          </Box>
+        ) : (
+          <Typography variant="body2">No images available.</Typography>
+        )}
+      </Box>
+    )}
+  </DialogContent>
+  <DialogActions>
+    <Button onClick={() => setPreviewDialogOpen(false)}>Close</Button>
+  </DialogActions>
+</Dialog>
+
 
       {lightboxOpen && (
         <Lightbox
           open={lightboxOpen}
           close={() => setLightboxOpen(false)}
-          slides={lightboxImages.map((image) => ({ src: image }))}
+          slides={lightboxImages.map((image) => ({ src: `${imageUrl}${image}` }))}
           index={lightboxIndex}
         />
       )}
@@ -702,4 +689,4 @@ const ProductComponent = () => {
   );
 };
 
-export default ProductComponent;
+export default Product;

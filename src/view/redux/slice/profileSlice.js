@@ -14,10 +14,10 @@ export const fetchProfileData = createAsyncThunk(
   "profile/fetchProfileData",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await api.get("/user/me");
-      console.log("al;fkgjadlkfjasdfasf",response)
+      const response = await api.get("/auth/me");
+      console.log("al;fkgjadlkfjasdfasf",response.data)
       
-      return response.data.data.user; 
+      return response.data.data; 
     } catch (error) {
       console.error("Error fetching profile data", error);
       return rejectWithValue(error.response?.data || error.message);
@@ -37,8 +37,8 @@ const profileSlice = createSlice({
       })
       .addCase(fetchProfileData.fulfilled, (state, action) => {
         state.loading = false;
-        state.user_role = action.payload.user_role;
-        state.full_name = action.payload.full_name;
+        state.user_role = action.payload.role;
+        state.full_name = action.payload.name;
         state.email = action.payload.email;
         state.mobile = action.payload.mobile;
       })
