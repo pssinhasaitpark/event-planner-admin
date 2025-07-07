@@ -6,6 +6,7 @@ export const fetchEvents = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await api.get("/events/getAll");
+      console.log("Fetched events:", response.data.data);
       return response.data.data;
     } catch (error) {
       return rejectWithValue(error.response.data);

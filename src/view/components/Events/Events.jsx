@@ -268,8 +268,8 @@ const Events = () => {
             });
           }}
           sx={{
-            backgroundColor: "#023e8a",
-            "&:hover": { backgroundColor: "#023e8a" },
+            backgroundColor: "#121212",
+            "&:hover": { backgroundColor: "#121212" },
             textTransform: "none",
           }}
         >
@@ -279,21 +279,36 @@ const Events = () => {
 
       {eventsData && eventsData.length > 0 ? (
         <>
-          <TableContainer component={Paper} sx={{ mt: 2 }}>
-            <Table>
+          <TableContainer
+            component={Paper}
+            sx={{
+              mt: 2,
+              height: "60vh", // Fixed height for the table container
+              overflowY: "auto", // Enable vertical scrolling if content overflows
+            }}
+          >
+            <Table sx={{ minWidth: 650 }} aria-label="simple table">
               <TableHead>
                 <TableRow>
-                  <TableCell sx={{ fontWeight: "bold" }}>Title</TableCell>
-                  <TableCell sx={{ fontWeight: "bold" }}>Description</TableCell>
-                  <TableCell sx={{ fontWeight: "bold" }}>Banner</TableCell>
-                  <TableCell sx={{ fontWeight: "bold" }}>Actions</TableCell>
+                  <TableCell sx={{ fontWeight: "bold", width: "20%" }}>
+                    Title
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: "bold", width: "40%" }}>
+                    Description
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: "bold", width: "20%" }}>
+                    Banner
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: "bold", width: "20%" }}>
+                    Actions
+                  </TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {currentEventsData.map((event, index) => (
                   <TableRow key={event._id}>
-                    <TableCell>{event.title}</TableCell>
-                    <TableCell>
+                    <TableCell sx={{ width: "20%" }}>{event.title}</TableCell>
+                    <TableCell sx={{ width: "40%" }}>
                       <div
                         dangerouslySetInnerHTML={{
                           __html: event.description
@@ -302,11 +317,10 @@ const Events = () => {
                         }}
                       />
                     </TableCell>
-                    <TableCell>
+                    <TableCell sx={{ width: "20%" }}>
                       {event.banner ? (
                         <Avatar
-                          src={`(${imageUrl}${event.banner})`}
-                          // `url(${imageUrl}${event.banner})`
+                          src={`${imageUrl}${event.banner}`}
                           variant="rounded"
                           sx={{
                             width: 100,
@@ -320,17 +334,17 @@ const Events = () => {
                         <Typography variant="body2">No banner</Typography>
                       )}
                     </TableCell>
-                    <TableCell>
+                    <TableCell sx={{ width: "20%" }}>
                       <Box display="flex" alignItems="center">
                         <IconButton
                           onClick={() => handlePreviewClick(event)}
-                          sx={{ border: 0 }}
+                          sx={{ border: 0, color: "#121212" }}
                         >
                           <VisibilityIcon />
                         </IconButton>
                         <IconButton
                           onClick={() => handleEditClick(event)}
-                          sx={{ border: 0 }}
+                          sx={{ border: 0, color: "#121212" }}
                         >
                           <EditIcon />
                         </IconButton>
@@ -347,12 +361,26 @@ const Events = () => {
               </TableBody>
             </Table>
           </TableContainer>
+
           <Box display="flex" justifyContent="center" sx={{ mt: 2 }}>
             <Pagination
               count={Math.ceil(eventsData.length / itemsPerPage)}
               page={currentPage}
               onChange={handlePageChange}
-              color="primary"
+              color="secondary"
+              sx={{
+                // backgroundColor: "#121212",
+                borderRadius: "8px",
+                padding: "4px 8px",
+                "& .MuiPaginationItem-root": {
+                  color: "#121212", // page number text color
+                  borderColor: "#333",
+                },
+                "& .Mui-selected": {
+                  backgroundColor: "#333 !important",
+                  color: "#fff",
+                },
+              }}
             />
           </Box>
         </>
@@ -1043,8 +1071,8 @@ const Events = () => {
                   type="submit"
                   variant="contained"
                   sx={{
-                    backgroundColor: "#023e8a",
-                    "&:hover": { backgroundColor: "#023e8a" },
+                    backgroundColor: "#121212",
+                    "&:hover": { backgroundColor: "#121212" },
                     textTransform: "none",
                   }}
                 >
@@ -1165,7 +1193,12 @@ const Events = () => {
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setPreviewDialogOpen(false)}>Close</Button>
+          <Button
+            onClick={() => setPreviewDialogOpen(false)}
+            sx={{ color: "#121212" }}
+          >
+            Close
+          </Button>
         </DialogActions>
       </Dialog>
       {lightboxOpen && (

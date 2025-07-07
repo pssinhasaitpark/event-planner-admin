@@ -15,7 +15,7 @@ const Pagination = ({ totalItems, itemsPerPage, currentPage, onPageChange }) => 
         count={totalPages}
         page={currentPage}
         onChange={handlePageChange}
-        color="primary"
+        color="#121212"
       />
     </Stack>
   );
